@@ -1,6 +1,5 @@
 ---
 import '../styles/global.css';
-import { base } from 'astro:config';
 
 interface Props {
 	title: string;
@@ -26,14 +25,14 @@ const { title, description = "Free online finance and tax calculators for India.
 	<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
 		<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
 			<div class="container mx-auto px-4 h-16 flex items-center justify-between">
-				<a href={`${base}/`} class="flex items-center gap-2 group">
+				<a href={import.meta.env.BASE_URL} class="flex items-center gap-2 group">
 					<div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold group-hover:bg-indigo-700 transition-colors">
 						FT
 					</div>
 					<span class="text-xl font-bold tracking-tight">FinTool<span class="text-indigo-600">India</span></span>
 				</a>
 				<nav class="hidden md:flex items-center gap-8">
-					<a href={`${base}/fd-gst-calculator`} class="text-sm font-medium hover:text-indigo-600 transition-colors">FD & GST Calculator</a>
+					<a href={`${import.meta.env.BASE_URL}fd-gst-calculator`} class="text-sm font-medium hover:text-indigo-600 transition-colors">FD & GST Calculator</a>
 					<a href="#" class="text-sm font-medium hover:text-indigo-600 transition-colors">SIP Calculator</a>
 					<a href="#" class="text-sm font-medium hover:text-indigo-600 transition-colors">Income Tax</a>
 				</nav>
@@ -53,7 +52,7 @@ const { title, description = "Free online finance and tax calculators for India.
 			<div class="container mx-auto px-4">
 				<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
 					<div class="col-span-1 md:col-span-2">
-						<a href={`${base}/`} class="flex items-center gap-2 mb-4">
+						<a href={import.meta.env.BASE_URL} class="flex items-center gap-2 mb-4">
 							<div class="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-white font-bold text-xs">
 								FT
 							</div>
@@ -66,8 +65,8 @@ const { title, description = "Free online finance and tax calculators for India.
 					<div>
 						<h3 class="font-bold text-sm mb-4 uppercase tracking-wider text-gray-400">Calculators</h3>
 						<ul class="space-y-2">
-							<li><a href={`${base}/fd-gst-calculator`} class="text-gray-600 hover:text-indigo-600 text-sm">FD Calculator</a></li>
-							<li><a href={`${base}/fd-gst-calculator`} class="text-gray-600 hover:text-indigo-600 text-sm">GST Calculator</a></li>
+							<li><a href={`${import.meta.env.BASE_URL}fd-gst-calculator`} class="text-gray-600 hover:text-indigo-600 text-sm">FD Calculator</a></li>
+							<li><a href={`${import.meta.env.BASE_URL}fd-gst-calculator`} class="text-gray-600 hover:text-indigo-600 text-sm">GST Calculator</a></li>
 							<li><a href="#" class="text-gray-600 hover:text-indigo-600 text-sm">SIP Calculator</a></li>
 						</ul>
 					</div>
