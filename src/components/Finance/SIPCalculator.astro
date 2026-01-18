@@ -19,12 +19,18 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 				</div>
 
 				<div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-8 mb-8">
+					<!-- Mode Toggle -->
+					<div class="flex p-1 bg-gray-100 rounded-xl mb-8 w-fit mx-auto">
+						<button id="mode-sip" class="px-6 py-2 rounded-lg text-sm font-bold transition-all bg-white text-green-600 shadow-sm">SIP</button>
+						<button id="mode-lumpsum" class="px-6 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700">Lumpsum</button>
+					</div>
+
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 						<div class="space-y-6">
 							<div>
-								<label class="block text-sm font-semibold text-gray-700 mb-2">Monthly Investment (₹)</label>
+								<label id="invest-label" class="block text-sm font-semibold text-gray-700 mb-2">Monthly Investment (₹)</label>
 								<input type="number" id="sip-monthly" value="5000" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all outline-none" />
-								<input type="range" min="500" max="100000" step="500" value="5000" class="w-full mt-4 accent-green-600 cursor-pointer" oninput="document.getElementById('sip-monthly').value = this.value; calculateSIP()" />
+								<input type="range" id="sip-range" min="500" max="100000" step="500" value="5000" class="w-full mt-4 accent-green-600 cursor-pointer" />
 							</div>
 							<div>
 								<label class="block text-sm font-semibold text-gray-700 mb-2">Expected Return Rate (p.a. %)</label>
@@ -97,31 +103,81 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 </section>
 
 <script is:inline>
+	let currentMode = 'sip';
+
+	const modeSipBtn = document.getElementById('mode-sip');
+	const modeLumpsumBtn = document.getElementById('mode-lumpsum');
+	const investLabel = document.getElementById('invest-label');
+	const investMonthlyInput = document.getElementById('sip-monthly');
+	const investRangeInput = document.getElementById('sip-range');
+
+	modeSipBtn.addEventListener('click', () => setMode('sip'));
+	modeLumpsumBtn.addEventListener('click', () => setMode('lumpsum'));
+
+	function setMode(mode) {
+		currentMode = mode;
+		if (mode === 'sip') {
+			modeSipBtn.className = 'px-6 py-2 rounded-lg text-sm font-bold transition-all bg-white text-green-600 shadow-sm';
+			modeLumpsumBtn.className = 'px-6 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700';
+			investLabel.innerText = 'Monthly Investment (₹)';
+			investMonthlyInput.value = 5000;
+			investRangeInput.max = 100000;
+			investRangeInput.value = 5000;
+		} else {
+			modeLumpsumBtn.className = 'px-6 py-2 rounded-lg text-sm font-bold transition-all bg-white text-green-600 shadow-sm';
+			modeSipBtn.className = 'px-6 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700';
+			investLabel.innerText = 'Total Investment (₹)';
+			investMonthlyInput.value = 10000;
+			investRangeInput.max = 1000000;
+			investRangeInput.value = 10000;
+		}
+		calculateSIP();
+	}
+
+	investRangeInput.addEventListener('input', (e) => {
+		investMonthlyInput.value = e.target.value;
+		calculateSIP();
+	});
+
+	investMonthlyInput.addEventListener('input', (e) => {
+		investRangeInput.value = e.target.value;
+		calculateSIP();
+	});
+
 	const formatINR = (amount) => {
 		return '₹ ' + Math.round(amount).toLocaleString('en-IN');
 	};
 
 	const calculateSIP = () => {
-		const P = parseFloat(document.getElementById('sip-monthly').value) || 0;
+		const P = parseFloat(investMonthlyInput.value) || 0;
 		const annualRate = parseFloat(document.getElementById('sip-rate').value) || 0;
 		const years = parseFloat(document.getElementById('sip-years').value) || 0;
 
-		const i = annualRate / 12 / 100;
-		const n = years * 12;
-
 		if (P <= 0 || annualRate <= 0 || years <= 0) return;
 
-		// Formula: FV = P × [{(1 + i)^n - 1} / i] × (1 + i)
-		const FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
-		const invested = P * n;
-		const earnings = FV - invested;
+		let FV, invested, earnings;
+
+		if (currentMode === 'sip') {
+			const i = annualRate / 12 / 100;
+			const n = years * 12;
+			// Formula: FV = P × [{(1 + i)^n - 1} / i] × (1 + i)
+			FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+			invested = P * n;
+		} else {
+			// Lumpsum Formula: FV = P × (1 + r)^n
+			const r = annualRate / 100;
+			FV = P * Math.pow(1 + r, years);
+			invested = P;
+		}
+
+		earnings = FV - invested;
 
 		document.getElementById('sip-total').innerText = formatINR(FV);
 		document.getElementById('sip-invested').innerText = formatINR(invested);
 		document.getElementById('sip-earnings').innerText = formatINR(earnings);
 	};
 
-	['sip-monthly', 'sip-rate', 'sip-years'].forEach(id => {
+	['sip-rate', 'sip-years'].forEach(id => {
 		const el = document.getElementById(id);
 		if (el) el.addEventListener('input', calculateSIP);
 	});
