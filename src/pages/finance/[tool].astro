@@ -1,0 +1,39 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FDCalculator from '../../components/Finance/FDCalculator.astro';
+import GSTCalculator from '../../components/Finance/GSTCalculator.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { tool: 'fd-calculator' } },
+    { params: { tool: 'gst-calculator' } },
+  ];
+}
+
+const { tool } = Astro.params;
+
+const tools = {
+  'fd-calculator': {
+    title: "Fixed Deposit (FD) Calculator India",
+    description: "Calculate FD maturity amounts with quarterly compounding. Free calculator for Indian banks with interest breakdown and TDS information.",
+    Component: FDCalculator
+  },
+  'gst-calculator': {
+    title: "GST Calculator India - Calculate GST Tax Instantly",
+    description: "Free GST Calculator for India. Calculate GST inclusive and exclusive amounts with tax slab breakdown (5%, 12%, 18%, 28%). Instant CGST & SGST calculation.",
+    Component: GSTCalculator
+  }
+};
+
+const config = tools[tool as keyof typeof tools];
+
+if (!config) {
+  return Astro.redirect('/404');
+}
+
+const { title, description, Component } = config;
+---
+
+<Layout title={title} description={description}>
+  <Component />
+</Layout>
