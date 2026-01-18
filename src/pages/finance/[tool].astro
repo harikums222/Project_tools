@@ -6,6 +6,7 @@ import SIPCalculator from '../../components/Finance/SIPCalculator.astro';
 import AdvancedSIPCalculator from '../../components/Finance/AdvancedSIPCalculator.astro';
 import RDCalculator from '../../components/Finance/RDCalculator.astro';
 import SWPCalculator from '../../components/Finance/SWPCalculator.astro';
+import PPFCalculator from '../../components/Finance/PPFCalculator.astro';
 
 export function getStaticPaths() {
   return [
@@ -15,6 +16,7 @@ export function getStaticPaths() {
     { params: { tool: 'advanced-sip-calculator' } },
     { params: { tool: 'rd-calculator' } },
     { params: { tool: 'swp-calculator' } },
+    { params: { tool: 'ppf-calculator' } },
   ];
 }
 
@@ -50,6 +52,11 @@ const tools = {
     title: "SWP Calculator - Systematic Withdrawal Plan",
     description: "Calculate your monthly income from mutual fund investments. Plan your retirement withdrawals with our easy SWP tool.",
     Component: SWPCalculator
+  },
+  'ppf-calculator': {
+    title: "PPF Calculator India - Public Provident Fund Returns",
+    description: "Calculate PPF maturity value with historical interest rates. See a detailed year-by-year breakdown of your investment and tax-free interest.",
+    Component: PPFCalculator
   }
 };
 

@@ -1,0 +1,242 @@
+---
+// PPFCalculator Component
+import AdSidebar from '../Ads/AdSidebar.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Read CSV data for build-time and pass to client
+const csvPath = path.resolve('./src/data/periodic-rates.csv');
+const csvData = fs.readFileSync(csvPath, 'utf8');
+
+// Simple CSV parser for the frontmatter
+const parseCSV = (csv: string) => {
+	const lines = csv.split('\n');
+    const headers = lines[0].split(',');
+    return lines.slice(1).filter(l => l.trim()).map(line => {
+        const values = line.split(',');
+        const obj: any = {};
+        headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim());
+        return obj;
+    });
+};
+
+const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'PPF');
+---
+
+<section class="py-12 bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+	<div class="container mx-auto px-4">
+		<div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-12">
+			<!-- Side Ads -->
+			<div class="hidden md:block">
+				<AdSidebar />
+			</div>
+
+			<!-- Core Content -->
+			<div>
+				<div class="text-center max-w-2xl mx-auto mb-12">
+					<h1 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">PPF <span class="text-blue-600">Calculator</span></h1>
+					<p class="text-lg text-gray-600">Public Provident Fund (PPF) returns estimator with historical rate lookup.</p>
+				</div>
+
+				<div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-8 mb-8">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<div class="space-y-6">
+							<div>
+								<label class="block text-sm font-semibold text-gray-700 mb-2">Yearly Investment (₹)</label>
+								<input type="number" id="ppf-yearly" value="150000" min="500" max="150000" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all outline-none" />
+								<input type="range" id="ppf-yearly-range" min="500" max="150000" step="500" value="150000" class="w-full mt-4 accent-blue-600 cursor-pointer" />
+                                <p class="text-xs text-gray-400 mt-2">Max allowed: ₹1,50,000 per financial year.</p>
+							</div>
+							<div>
+								<label class="block text-sm font-semibold text-gray-700 mb-2">Start Financial Year</label>
+								<select id="ppf-start-year" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all outline-none">
+									<option value="2024">2024-25 (Latest)</option>
+                                    <option value="2023">2023-24</option>
+                                    <option value="2022">2022-23</option>
+                                    <option value="2021">2021-22</option>
+                                    <option value="2020">2020-21</option>
+                                    <option value="2019">2019-20</option>
+                                    <option value="2018">2018-19</option>
+								</select>
+							</div>
+							<div>
+								<label class="block text-sm font-semibold text-gray-700 mb-2">Tenure (Years)</label>
+								<input type="number" id="ppf-years" value="15" min="15" max="50" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all outline-none" />
+								<input type="range" id="ppf-years-range" min="15" max="50" step="5" value="15" class="w-full mt-4 accent-blue-600 cursor-pointer" />
+                                <p class="text-xs text-gray-400 mt-2">Minimum lock-in: 15 years.</p>
+							</div>
+						</div>
+
+						<div class="bg-blue-50 rounded-2xl p-8 flex flex-col justify-center space-y-6 border border-blue-100">
+							<div class="text-center">
+								<p class="text-blue-600 font-semibold mb-1">Maturity Value</p>
+								<h2 class="text-4xl font-bold text-gray-900" id="ppf-total">₹ 0</h2>
+							</div>
+							<div class="grid grid-cols-2 gap-4 pt-6 border-t border-blue-200">
+								<div class="text-center">
+									<p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Total Invested</p>
+									<p class="text-lg font-bold text-gray-800" id="ppf-invested">₹ 0</p>
+								</div>
+								<div class="text-center">
+									<p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Total Interest</p>
+									<p class="text-lg font-bold text-blue-600" id="ppf-earnings">₹ 0</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+                <!-- Year-wise Table -->
+                <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-12">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100">
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-gray-500">Year</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-gray-500">Opening Balance</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-gray-500">Interest (p.a.)</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase text-gray-500">Cl. Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ppf-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+				<article class="prose prose-blue max-w-none">
+					<h2 class="text-3xl font-bold text-gray-900 mb-6 font-display">What is Public Provident Fund (PPF)?</h2>
+					<p class="text-gray-600 leading-relaxed mb-6">
+						PPF is a long-term investment scheme backed by the Government of India. It offers attractive tax-free interest and is considered one of the safest investment options for retirement planning. 
+					</p>
+					
+					<h2 class="text-3xl font-bold text-gray-900 mt-12 mb-6">The "5th of the Month" Rule</h2>
+					<p class="text-gray-600 leading-relaxed mb-6">
+						Interest is calculated on the <strong>lowest balance</strong> in the account between the close of the 5th day and the end of the month. To maximize your interest, you should deposit before the 5th of every month or in a lumpsum at the start of the financial year (April 1st to 5th).
+					</p>
+
+                    <h2 class="text-3xl font-bold text-gray-900 mt-12 mb-6">PPF Calculator with Historical Rates</h2>
+					<p class="text-gray-600 leading-relaxed mb-6">
+						Unlike standard calculators, our PPF tool uses <strong>real historical interest rates</strong>. For example, if you choose a start year of 2018, the calculator will apply 8.0% for 2018, 7.9% for 2019, and 7.1% from 2020 onwards, as per actual government notifications.
+					</p>
+				</article>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script is:inline define:vars={{ rates }}>
+	const formatINR = (amount) => {
+		return '₹ ' + Math.round(amount).toLocaleString('en-IN');
+	};
+
+	const getRateForYear = (year) => {
+		// Data Structure: { Year_Starting, Month_Starting, Rate, Tool }
+		// We want the rate for the largest year/month <= target
+		const yearInt = parseInt(year);
+		const matches = rates.filter(r => parseInt(r.Year_Starting) <= yearInt);
+		if (matches.length === 0) return parseFloat(rates[0].Rate);
+		
+		// Sort by year and month descending to get latest
+		matches.sort((a, b) => {
+			if (a.Year_Starting !== b.Year_Starting) return parseInt(b.Year_Starting) - parseInt(a.Year_Starting);
+			return parseInt(b.Month_Starting) - parseInt(a.Month_Starting);
+		});
+		
+		return parseFloat(matches[0].Rate);
+	};
+
+    const calculatePPF = () => {
+        const yearlyInvest = parseFloat(document.getElementById('ppf-yearly').value) || 0;
+        const startYear = parseInt(document.getElementById('ppf-start-year').value);
+        const tenure = parseInt(document.getElementById('ppf-years').value);
+        
+        const tableBody = document.getElementById('ppf-table-body');
+        tableBody.innerHTML = '';
+
+        let balance = 0;
+        let totalInvested = 0;
+        let totalInterest = 0;
+
+        for (let year = 0; year < tenure; year++) {
+            const currentFY = startYear + year;
+            const currentRate = getRateForYear(currentFY);
+            const openingBalance = balance;
+            
+            // Assume lumpsum deposit at start of year for simplicity in this Basic tool
+            // (Maxes out interest as per 5th of month rule)
+            balance += yearlyInvest;
+            totalInvested += yearlyInvest;
+
+            const interest = Math.round(balance * (currentRate / 100));
+            balance += interest;
+            totalInterest += interest;
+
+            // Update Table
+            const row = `
+                <tr class="border-b border-gray-50 hover:bg-blue-50/50 transition-colors">
+                    <td class="px-6 py-4 text-sm font-semibold text-gray-700">${currentFY}-${(currentFY+1).toString().slice(2)}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${formatINR(openingBalance)}</td>
+                    <td class="px-6 py-4 text-sm text-indigo-600 font-medium">${interest.toLocaleString('en-IN')} (${currentRate}%)</td>
+                    <td class="px-6 py-4 text-sm font-bold text-gray-900">${formatINR(balance)}</td>
+                </tr>
+            `;
+            if (year < 20) tableBody.innerHTML += row; // Cap table rows for UI
+        }
+
+        document.getElementById('ppf-total').innerText = formatINR(balance);
+        document.getElementById('ppf-invested').innerText = formatINR(totalInvested);
+        document.getElementById('ppf-earnings').innerText = formatINR(totalInterest);
+    };
+
+    const syncPPF = (inputId, rangeId) => {
+		const input = document.getElementById(inputId);
+		const range = document.getElementById(rangeId);
+		if (input && range) {
+			input.addEventListener('input', () => {
+				range.value = input.value;
+				calculatePPF();
+			});
+			range.addEventListener('input', () => {
+				input.value = range.value;
+				calculatePPF();
+			});
+		}
+	};
+
+	syncPPF('ppf-yearly', 'ppf-yearly-range');
+	syncPPF('ppf-years', 'ppf-years-range');
+	document.getElementById('ppf-start-year').addEventListener('change', calculatePPF);
+
+	calculatePPF();
+</script>
+
+<style>
+	input[type="range"] {
+		-webkit-appearance: none;
+		height: 6px;
+		background: #e2e8f0;
+		border-radius: 5px;
+		background-image: linear-gradient(#2563eb, #2563eb);
+		background-repeat: no-repeat;
+	}
+    
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+    }
+	
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+	}
+
+	input[type=number] {
+	-moz-appearance: textfield;
+	}
+</style>
