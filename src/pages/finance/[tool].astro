@@ -2,11 +2,15 @@
 import Layout from '../../layouts/Layout.astro';
 import FDCalculator from '../../components/Finance/FDCalculator.astro';
 import GSTCalculator from '../../components/Finance/GSTCalculator.astro';
+import SIPCalculator from '../../components/Finance/SIPCalculator.astro';
+import AdvancedSIPCalculator from '../../components/Finance/AdvancedSIPCalculator.astro';
 
 export function getStaticPaths() {
   return [
     { params: { tool: 'fd-calculator' } },
     { params: { tool: 'gst-calculator' } },
+    { params: { tool: 'sip-calculator' } },
+    { params: { tool: 'advanced-sip-calculator' } },
   ];
 }
 
@@ -22,6 +26,16 @@ const tools = {
     title: "GST Calculator India - Calculate GST Tax Instantly",
     description: "Free GST Calculator for India. Calculate GST inclusive and exclusive amounts with tax slab breakdown (5%, 12%, 18%, 28%). Instant CGST & SGST calculation.",
     Component: GSTCalculator
+  },
+  'sip-calculator': {
+    title: "SIP Calculator India - Mutual Fund Returns Estimator",
+    description: "Calculate the future value of your Mutual Fund Systematic Investment Plan (SIP). Easy to use tool for Indian investors.",
+    Component: SIPCalculator
+  },
+  'advanced-sip-calculator': {
+    title: "Advanced SIP Calculator with Step-up & Inflation",
+    description: "Professional SIP planner with yearly step-up increments, inflation adjustment, and LTCG tax calculation for long-term wealth planning.",
+    Component: AdvancedSIPCalculator
   }
 };
 
