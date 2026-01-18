@@ -198,79 +198,33 @@ const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'PPF');
         document.getElementById('ppf-invested').innerText = formatINR(totalInvested);
         document.getElementById('ppf-earnings').innerText = formatINR(totalInterest);
 
-        updateChart(labels, investedData, totalData);
+        updateChart(totalInvested, totalInterest);
     };
 
     let ppfChart;
-    const updateChart = (labels, invested, total) => {
+    const updateChart = (invested, interest) => {
         const ctx = document.getElementById('ppfChart').getContext('2d');
-        
-        if (ppfChart) {
-            ppfChart.destroy();
-        }
-
+        if (ppfChart) ppfChart.destroy();
         ppfChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: labels,
+                labels: ['Maturity Breakdown'],
                 datasets: [
-                    {
-                        label: 'Invested Amount',
-                        data: invested,
-                        borderColor: '#94a3b8',
-                        backgroundColor: '#94a3b8',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        tension: 0.1,
-                        fill: false
-                    },
-                    {
-                        label: 'Total Value',
-                        data: total,
-                        borderColor: '#2563eb',
-                        backgroundColor: '#2563eb',
-                        borderWidth: 3,
-                        pointRadius: 0,
-                        tension: 0.1,
-                        fill: false
-                    }
+                    { label: 'Invested', data: [invested], backgroundColor: '#94a3b8', borderRadius: 6 },
+                    { label: 'Interest', data: [interest], backgroundColor: '#2563eb', borderRadius: 6 }
                 ]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            font: { size: 10, weight: 'bold' }
-                        }
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + formatINR(context.raw);
-                            }
-                        }
-                    }
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } },
+                    tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatINR(ctx.raw) } }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                if (value >= 10000000) return '₹' + (value/10000000).toFixed(1) + 'Cr';
-                                if (value >= 100000) return '₹' + (value/100000).toFixed(1) + 'L';
-                                return '₹' + value.toLocaleString('en-IN');
-                            },
-                            font: { size: 10 }
-                        }
-                    },
-                    x: {
-                        ticks: { font: { size: 10 } }
-                    }
+                    x: { stacked: true, display: false },
+                    y: { stacked: true, display: false }
                 }
             }
         });
@@ -299,6 +253,9 @@ const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'PPF');
 </script>
 
 <style>
+    #ppfChart {
+        max-height: 100px;
+    }
 	input[type="range"] {
 		-webkit-appearance: none;
 		height: 6px;

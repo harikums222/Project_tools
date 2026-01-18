@@ -168,50 +168,36 @@ const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'EPF');
 
         const finalValue = employeeBalance + employerBalance + totalInterest;
         document.getElementById('epf-total').innerText = formatINR(finalValue);
-        document.getElementById('epf-employee').innerText = formatINR(employeeBalance + (totalInterest/2)); // Split interest for display
+        document.getElementById('epf-employee').innerText = formatINR(employeeBalance + (totalInterest/2)); 
         document.getElementById('epf-employer').innerText = formatINR(employerBalance + (totalInterest/2));
         
-        updateChart(labels, growthData);
+        updateChart(employeeBalance + employerBalance, totalInterest);
     };
 
     let epfChart;
-    const updateChart = (labels, data) => {
+    const updateChart = (invested, interest) => {
         const ctx = document.getElementById('epfChart').getContext('2d');
         if (epfChart) epfChart.destroy();
         epfChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: labels,
-                datasets: [{
-                    label: 'EPF Growth',
-                    data: data,
-                    borderColor: '#4f46e5',
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    tension: 0.2,
-                    fill: false
-                }]
+                labels: ['Maturity Breakdown'],
+                datasets: [
+                    { label: 'Invested', data: [invested], backgroundColor: '#94a3b8', borderRadius: 6 },
+                    { label: 'Interest', data: [interest], backgroundColor: '#4f46e5', borderRadius: 6 }
+                ]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: { label: (ctx) => 'Wealth: ' + formatINR(ctx.raw) }
-                    }
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } },
+                    tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatINR(ctx.raw) } }
                 },
                 scales: {
-                    y: {
-                        ticks: {
-                            callback: (val) => {
-                                if (val >= 10000000) return '₹' + (val/10000000).toFixed(1) + 'Cr';
-                                if (val >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
-                                return '₹' + val.toLocaleString('en-IN');
-                            },
-                            font: { size: 10 }
-                        }
-                    },
-                    x: { ticks: { font: { size: 10 } } }
+                    x: { stacked: true, display: false },
+                    y: { stacked: true, display: false }
                 }
             }
         });
@@ -234,6 +220,9 @@ const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'EPF');
 </script>
 
 <style>
+	#epfChart {
+		max-height: 100px;
+	}
 	input[type="range"] {
 		-webkit-appearance: none;
 		height: 6px;
