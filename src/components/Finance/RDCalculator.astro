@@ -1,0 +1,150 @@
+---
+// RDCalculator Component
+import AdSidebar from '../Ads/AdSidebar.astro';
+---
+
+<section class="py-12 bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+	<div class="container mx-auto px-4">
+		<div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-12">
+			<!-- Side Ads -->
+			<div class="hidden md:block">
+				<AdSidebar />
+			</div>
+
+			<!-- Core Content -->
+			<div>
+				<div class="text-center max-w-2xl mx-auto mb-12">
+					<h1 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">RD <span class="text-indigo-600">Calculator</span></h1>
+					<p class="text-lg text-gray-600">Calculate the maturity value of your Recurring Deposit (RD) with ease.</p>
+				</div>
+
+				<div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-8 mb-8">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<div class="space-y-6">
+							<div>
+								<label class="block text-sm font-semibold text-gray-700 mb-2">Monthly Deposit (₹)</label>
+								<input type="number" id="rd-monthly" value="5000" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none" />
+								<input type="range" id="rd-monthly-range" min="500" max="100000" step="500" value="5000" class="w-full mt-4 accent-indigo-600 cursor-pointer" />
+							</div>
+							<div>
+								<label class="block text-sm font-semibold text-gray-700 mb-2">Rate of Interest (p.a. %)</label>
+								<input type="number" id="rd-rate" value="7" step="0.1" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none" />
+								<input type="range" id="rd-rate-range" min="1" max="15" step="0.1" value="7" class="w-full mt-4 accent-indigo-600 cursor-pointer" />
+							</div>
+							<div>
+								<label class="block text-sm font-semibold text-gray-700 mb-2">Tenure (Years)</label>
+								<input type="number" id="rd-years" value="5" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none" />
+								<input type="range" id="rd-years-range" min="1" max="10" step="1" value="5" class="w-full mt-4 accent-indigo-600 cursor-pointer" />
+							</div>
+						</div>
+
+						<div class="bg-indigo-50 rounded-2xl p-8 flex flex-col justify-center space-y-6 border border-indigo-100">
+							<div class="text-center">
+								<p class="text-indigo-600 font-semibold mb-1">Maturity Value</p>
+								<h2 class="text-4xl font-bold text-gray-900" id="rd-total">₹ 3,58,915</h2>
+							</div>
+							<div class="grid grid-cols-2 gap-4 pt-6 border-t border-indigo-200">
+								<div class="text-center">
+									<p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Total Invested</p>
+									<p class="text-lg font-bold text-gray-800" id="rd-invested">₹ 3,00,000</p>
+								</div>
+								<div class="text-center">
+									<p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Interest Earned</p>
+									<p class="text-lg font-bold text-indigo-600" id="rd-earnings">₹ 58,915</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<article class="prose prose-indigo max-w-none">
+					<h2 class="text-3xl font-bold text-gray-900 mb-6">What is a Recurring Deposit (RD)?</h2>
+					<p class="text-gray-600 leading-relaxed mb-6">
+						A Recurring Deposit (RD) is a special kind of term deposit offered by banks in India which help people with regular incomes to deposit a fixed amount every month into their RD account and earn interest at the rate applicable to Fixed Deposits.
+					</p>
+					
+					<h2 class="text-3xl font-bold text-gray-900 mt-12 mb-6">How RD Interest is Calculated?</h2>
+					<p class="text-gray-600 leading-relaxed mb-6">
+						In India, RD interest is usually compounded quarterly. The formula for the maturity value is:<br/>
+						<code>M = P &times; [(1 + i)<sup>n</sup> - 1] / [1 - (1 + i)<sup>-1/3</sup>]</code><br/><br/>
+						Where:<br/>
+						• <strong>M</strong> = Maturity Value<br/>
+						• <strong>P</strong> = Monthly Installment<br/>
+						• <strong>i</strong> = Quarterly Rate of Interest (R / 4 / 100)<br/>
+						• <strong>n</strong> = Number of Quarters (Tenure in months / 3)
+					</p>
+				</article>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script is:inline>
+	const formatINR = (amount) => {
+		return '₹ ' + Math.round(amount).toLocaleString('en-IN');
+	};
+
+	const calculateRD = () => {
+		const P = parseFloat(document.getElementById('rd-monthly').value) || 0;
+		const R = parseFloat(document.getElementById('rd-rate').value) || 0;
+		const years = parseFloat(document.getElementById('rd-years').value) || 0;
+
+		if (P <= 0 || R <= 0 || years <= 0) return;
+
+		const months = years * 12;
+		const i = R / 400; // Quarterly rate
+		const n = months / 3; // Number of quarters
+
+		// Formula: M = P * ((1+i)^n - 1) / (1 - (1+i)^(-1/3))
+		const M = P * (Math.pow(1 + i, n) - 1) / (1 - Math.pow(1 + i, -1/3));
+		
+		const invested = P * months;
+		const earnings = M - invested;
+
+		document.getElementById('rd-total').innerText = formatINR(M);
+		document.getElementById('rd-invested').innerText = formatINR(invested);
+		document.getElementById('rd-earnings').innerText = formatINR(earnings);
+	};
+
+	const syncRD = (inputId, rangeId) => {
+		const input = document.getElementById(inputId);
+		const range = document.getElementById(rangeId);
+		if (input && range) {
+			input.addEventListener('input', () => {
+				range.value = input.value;
+				calculateRD();
+			});
+			range.addEventListener('input', () => {
+				input.value = range.value;
+				calculateRD();
+			});
+		}
+	};
+
+	syncRD('rd-monthly', 'rd-monthly-range');
+	syncRD('rd-rate', 'rd-rate-range');
+	syncRD('rd-years', 'rd-years-range');
+
+	calculateRD();
+</script>
+
+<style>
+	input[type="range"] {
+		-webkit-appearance: none;
+		height: 6px;
+		background: #e2e8f0;
+		border-radius: 5px;
+		background-image: linear-gradient(#4f46e5, #4f46e5);
+		background-repeat: no-repeat;
+	}
+	
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+	}
+
+	input[type=number] {
+	-moz-appearance: textfield;
+	}
+</style>

@@ -4,6 +4,8 @@ import FDCalculator from '../../components/Finance/FDCalculator.astro';
 import GSTCalculator from '../../components/Finance/GSTCalculator.astro';
 import SIPCalculator from '../../components/Finance/SIPCalculator.astro';
 import AdvancedSIPCalculator from '../../components/Finance/AdvancedSIPCalculator.astro';
+import RDCalculator from '../../components/Finance/RDCalculator.astro';
+import SWPCalculator from '../../components/Finance/SWPCalculator.astro';
 
 export function getStaticPaths() {
   return [
@@ -11,6 +13,8 @@ export function getStaticPaths() {
     { params: { tool: 'gst-calculator' } },
     { params: { tool: 'sip-calculator' } },
     { params: { tool: 'advanced-sip-calculator' } },
+    { params: { tool: 'rd-calculator' } },
+    { params: { tool: 'swp-calculator' } },
   ];
 }
 
@@ -36,6 +40,16 @@ const tools = {
     title: "Advanced SIP Calculator with Step-up & Inflation",
     description: "Professional SIP planner with yearly step-up increments, inflation adjustment, and LTCG tax calculation for long-term wealth planning.",
     Component: AdvancedSIPCalculator
+  },
+  'rd-calculator': {
+    title: "Recurring Deposit (RD) Calculator India",
+    description: "Calculate Recurring Deposit maturity amounts with quarterly compounding. Fast and accurate RD calculator for Indian banks.",
+    Component: RDCalculator
+  },
+  'swp-calculator': {
+    title: "SWP Calculator - Systematic Withdrawal Plan",
+    description: "Calculate your monthly income from mutual fund investments. Plan your retirement withdrawals with our easy SWP tool.",
+    Component: SWPCalculator
   }
 };
 

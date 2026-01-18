@@ -46,6 +46,8 @@ const { title, description = "Free online finance and tax calculators for India.
 						<div class="absolute top-[100%] left-0 w-48 bg-white border border-gray-100 shadow-xl rounded-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
 							<a href={`${import.meta.env.BASE_URL}/finance/fd-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">FD Calculator</a>
 							<a href={`${import.meta.env.BASE_URL}/finance/gst-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">GST Calculator</a>
+							<a href={`${import.meta.env.BASE_URL}/finance/rd-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">RD Calculator</a>
+							<a href={`${import.meta.env.BASE_URL}/finance/swp-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">SWP Calculator</a>
 						</div>
 					</div>
 				</nav>
@@ -98,8 +100,10 @@ const { title, description = "Free online finance and tax calculators for India.
 						<h3 class="font-bold text-sm mb-4 uppercase tracking-wider text-gray-400">Calculators</h3>
 						<ul class="space-y-2">
 							<li><a href={`${import.meta.env.BASE_URL}/finance/sip-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">SIP Calculator</a></li>
+							<li><a href={`${import.meta.env.BASE_URL}/finance/rd-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">RD Calculator</a></li>
 							<li><a href={`${import.meta.env.BASE_URL}/finance/fd-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">FD Calculator</a></li>
 							<li><a href={`${import.meta.env.BASE_URL}/finance/gst-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">GST Calculator</a></li>
+							<li><a href={`${import.meta.env.BASE_URL}/finance/swp-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">SWP Calculator</a></li>
 						</ul>
 					</div>
 					<div>
@@ -125,10 +129,12 @@ const { title, description = "Free online finance and tax calculators for India.
 	<script is:inline>
 		// Search and Menu Functionality
 		const tools = [
-			{ name: 'SIP Calculator', url: '/finance/sip-calculator/', keywords: ['sip', 'mutual fund', 'investment', 'returns'] },
+			{ name: 'SIP Calculator', url: '/finance/sip-calculator/', keywords: ['sip', 'mutual fund', 'investment', 'returns', 'monthly'] },
 			{ name: 'Advanced SIP Calculator', url: '/finance/advanced-sip-calculator/', keywords: ['sip', 'stepup', 'inflation', 'tax', 'returns'] },
 			{ name: 'FD Calculator', url: '/finance/fd-calculator/', keywords: ['fd', 'fixed deposit', 'interest', 'savings'] },
 			{ name: 'GST Calculator', url: '/finance/gst-calculator/', keywords: ['gst', 'tax', 'invoice', 'business'] },
+			{ name: 'RD Calculator', url: '/finance/rd-calculator/', keywords: ['rd', 'recurring deposit', 'recurring', 'savings'] },
+			{ name: 'SWP Calculator', url: '/finance/swp-calculator/', keywords: ['swp', 'systematic withdrawal', 'withdrawal', 'income'] },
 		];
 
 		const searchInput = document.getElementById('tool-search');
@@ -137,9 +143,10 @@ const { title, description = "Free online finance and tax calculators for India.
 		
 		// Helper to get correct base relative path
 		const getBaseUrl = () => {
-			const base = import.meta.env?.BASE_URL || '';
-			// Since this is inlined and might not have access to import.meta, we use a fallback
-			return window.location.pathname.startsWith('/Project_tools') ? '/Project_tools' : '';
+			// Try to get base from the meta tag if available, or fallback to current path detection
+			const path = window.location.pathname;
+			if (path.includes('/Project_tools')) return '/Project_tools';
+			return '';
 		};
 
 		if (searchInput) {
