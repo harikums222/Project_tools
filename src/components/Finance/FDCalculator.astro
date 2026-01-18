@@ -102,50 +102,33 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 		document.getElementById('fd-invested').innerText = formatINR(P);
 		document.getElementById('fd-interest').innerText = formatINR(interest);
 
-        // Chart Data
-        const labels = [];
-        const investedData = [];
-        const totalData = [];
-        for (let y = 0; y <= t; y++) {
-            labels.push('Yr ' + y);
-            investedData.push(P);
-            totalData.push(P * Math.pow((1 + r / n), (n * y)));
-        }
-        updateChart(labels, investedData, totalData);
+        updateChart(P, interest);
 	};
 
     let fdChart;
-    const updateChart = (labels, invested, total) => {
+    const updateChart = (invested, interest) => {
         const ctx = document.getElementById('fdChart').getContext('2d');
         if (fdChart) fdChart.destroy();
         fdChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: labels,
+                labels: ['Maturity Breakdown'],
                 datasets: [
-                    { label: 'Invested', data: invested, borderColor: '#94a3b8', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: false },
-                    { label: 'Total Value', data: total, borderColor: '#4f46e5', borderWidth: 3, pointRadius: 0, tension: 0.1, fill: false }
+                    { label: 'Invested', data: [invested], backgroundColor: '#94a3b8', borderRadius: 6 },
+                    { label: 'Interest', data: [interest], backgroundColor: '#4f46e5', borderRadius: 6 }
                 ]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } },
-                    tooltip: { mode: 'index', intersect: false, callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatINR(ctx.raw) } }
+                    tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatINR(ctx.raw) } }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: (val) => {
-                                if (val >= 10000000) return '₹' + (val/10000000).toFixed(1) + 'Cr';
-                                if (val >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
-                                return '₹' + val.toLocaleString('en-IN');
-                            },
-                            font: { size: 10 }
-                        }
-                    },
-                    x: { ticks: { font: { size: 10 } } }
+                    x: { stacked: true, display: false },
+                    y: { stacked: true, display: false }
                 }
             }
         });
@@ -162,6 +145,9 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 </script>
 
 <style>
+    #fdChart {
+        max-height: 100px;
+    }
 	input[type="range"] {
 		-webkit-appearance: none;
 		height: 6px;

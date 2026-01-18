@@ -161,21 +161,9 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 		const monthlyRate = annualRate / 12 / 100;
 		const totalMonths = years * 12;
 
-        const labels = [];
-        const investedData = [];
-        const totalData = [];
-
 		for (let m = 1; m <= totalMonths; m++) {
 			totalInvested += currentMonthlySIP;
-			// Simple monthly compounding: Value at start of month is (val + sip), then we add interest
 			portfolioValue = (portfolioValue + currentMonthlySIP) * (1 + monthlyRate);
-
-            if (m % 12 === 0) {
-                const yr = m / 12;
-                labels.push('Yr ' + yr);
-                investedData.push(totalInvested);
-                totalData.push(portfolioValue);
-            }
 
 			// Annual Step-up
 			if (m % 12 === 0) {
@@ -194,7 +182,6 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 		const postTaxValue = portfolioValue - tax;
 
 		// Inflation Adjustment
-		// FV_real = FV / (1 + inf)^years
 		const inflationAdjValue = postTaxValue / Math.pow(1 + inflationPercent / 100, years);
 
 		document.getElementById('adv-sip-final').innerText = formatINR(portfolioValue);
@@ -203,62 +190,46 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 		document.getElementById('adv-sip-posttax').innerText = formatINR(postTaxValue);
 		document.getElementById('adv-sip-inflation-adj').innerText = formatINR(inflationAdjValue);
 
-        updateChart(labels, investedData, totalData);
+        updateChart(totalInvested, gains);
 	};
 
     let advSipChart;
-    const updateChart = (labels, invested, total) => {
+    const updateChart = (invested, gains) => {
         const ctx = document.getElementById('advSipChart').getContext('2d');
         if (advSipChart) advSipChart.destroy();
 
         advSipChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: labels,
+                labels: ['Wealth Breakdown'],
                 datasets: [
                     {
                         label: 'Invested',
-                        data: invested,
-                        borderColor: '#94a3b8',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        tension: 0.1,
-                        fill: false
+                        data: [invested],
+                        backgroundColor: '#94a3b8',
+                        borderRadius: 6,
                     },
                     {
-                        label: 'Total Value',
-                        data: total,
-                        borderColor: '#059669',
-                        borderWidth: 3,
-                        pointRadius: 0,
-                        tension: 0.1,
-                        fill: false
+                        label: 'Gains',
+                        data: [gains],
+                        backgroundColor: '#059669',
+                        borderRadius: 6,
                     }
                 ]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } },
                     tooltip: {
-                        mode: 'index',
-                        intersect: false,
                         callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatINR(ctx.raw) }
                     }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: (val) => {
-                                if (val >= 10000000) return '₹' + (val/10000000).toFixed(1) + 'Cr';
-                                if (val >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
-                                return '₹' + val.toLocaleString('en-IN');
-                            },
-                            font: { size: 10 }
-                        }
-                    },
-                    x: { ticks: { font: { size: 10 } } }
+                    x: { stacked: true, display: false },
+                    y: { stacked: true, display: false }
                 }
             }
         });
@@ -280,6 +251,9 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 </script>
 
 <style>
+    #advSipChart {
+        max-height: 100px;
+    }
 	input::-webkit-outer-spin-button,
 	input::-webkit-inner-spin-button {
 	-webkit-appearance: none;
