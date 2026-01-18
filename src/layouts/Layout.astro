@@ -21,6 +21,7 @@ const { title, description = "Free online finance and tax calculators for India.
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<script src="https://cdn.jsdelivr.net/npm/chart.js" is:inline></script>
 	</head>
 	<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
 		<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -48,6 +49,7 @@ const { title, description = "Free online finance and tax calculators for India.
 							<a href={`${import.meta.env.BASE_URL}/finance/gst-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">GST Calculator</a>
 							<a href={`${import.meta.env.BASE_URL}/finance/rd-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">RD Calculator</a>
 							<a href={`${import.meta.env.BASE_URL}/finance/ppf-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">PPF Calculator</a>
+							<a href={`${import.meta.env.BASE_URL}/finance/epf-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">EPF Calculator</a>
 							<a href={`${import.meta.env.BASE_URL}/finance/swp-calculator/`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">SWP Calculator</a>
 						</div>
 					</div>
@@ -105,6 +107,8 @@ const { title, description = "Free online finance and tax calculators for India.
 							<li><a href={`${import.meta.env.BASE_URL}/finance/fd-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">FD Calculator</a></li>
 							<li><a href={`${import.meta.env.BASE_URL}/finance/gst-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">GST Calculator</a></li>
 							<li><a href={`${import.meta.env.BASE_URL}/finance/swp-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">SWP Calculator</a></li>
+							<li><a href={`${import.meta.env.BASE_URL}/finance/ppf-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">PPF Calculator</a></li>
+							<li><a href={`${import.meta.env.BASE_URL}/finance/epf-calculator/`} class="text-gray-600 hover:text-indigo-600 text-sm">EPF Calculator</a></li>
 						</ul>
 					</div>
 					<div>
@@ -136,6 +140,7 @@ const { title, description = "Free online finance and tax calculators for India.
 			{ name: 'GST Calculator', url: '/finance/gst-calculator/', keywords: ['gst', 'tax', 'invoice', 'business'] },
 			{ name: 'RD Calculator', url: '/finance/rd-calculator/', keywords: ['rd', 'recurring deposit', 'recurring', 'savings'] },
 			{ name: 'PPF Calculator', url: '/finance/ppf-calculator/', keywords: ['ppf', 'provident fund', 'savings', 'tax free', 'retirement'] },
+			{ name: 'EPF Calculator', url: '/finance/epf-calculator/', keywords: ['epf', 'employee provident fund', 'retirement', 'salary', 'pension'] },
 			{ name: 'SWP Calculator', url: '/finance/swp-calculator/', keywords: ['swp', 'systematic withdrawal', 'withdrawal', 'income'] },
 		];
 

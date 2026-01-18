@@ -1,0 +1,255 @@
+---
+// EPFCalculator Component
+import AdSidebar from '../Ads/AdSidebar.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Read CSV data for build-time and pass to client
+const csvPath = path.resolve('./src/data/periodic-rates.csv');
+const csvData = fs.readFileSync(csvPath, 'utf8');
+
+const parseCSV = (csv: string) => {
+	const lines = csv.split('\n');
+    const headers = lines[0].split(',');
+    return lines.slice(1).filter(l => l.trim()).map(line => {
+        const values = line.split(',');
+        const obj: any = {};
+        headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim());
+        return obj;
+    });
+};
+
+const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'EPF');
+---
+
+<section class="py-12 bg-gradient-to-br from-indigo-50 via-white to-sky-50">
+	<div class="container mx-auto px-4">
+		<div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-12">
+			<!-- Side Ads -->
+			<div class="hidden md:block">
+				<AdSidebar />
+			</div>
+
+			<!-- Core Content -->
+			<div>
+				<div class="text-center max-w-2xl mx-auto mb-12">
+					<h1 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">EPF <span class="text-indigo-600">Calculator</span></h1>
+					<p class="text-lg text-gray-600">Estimate your Employee Provident Fund (EPF) maturity with contribution split and historical rates.</p>
+				</div>
+
+				<div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-8 mb-8">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<div class="space-y-6">
+							<div>
+								<label class="block text-sm font-semibold text-gray-700 mb-2">Monthly Basic Salary + DA (₹)</label>
+								<input type="number" id="epf-salary" value="30000" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none" />
+								<input type="range" id="epf-salary-range" min="5000" max="500000" step="1000" value="30000" class="w-full mt-4 accent-indigo-600 cursor-pointer" />
+							</div>
+							<div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Years to Retire</label>
+                                    <input type="number" id="epf-years" value="25" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Annual Hike (%)</label>
+                                    <input type="number" id="epf-hike" value="5" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Existing EPF Balance (Optional)</label>
+                                <input type="number" id="epf-balance" value="0" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none" />
+                            </div>
+						</div>
+
+						<div class="bg-indigo-50 rounded-2xl p-8 flex flex-col justify-center space-y-6 border border-indigo-100">
+							<div class="text-center">
+								<p class="text-indigo-600 font-semibold mb-1">Estimated Maturity</p>
+								<h2 class="text-4xl font-bold text-gray-900" id="epf-total">₹ 0</h2>
+							</div>
+							<div class="grid grid-cols-2 gap-4 pt-6 border-t border-indigo-200">
+								<div class="text-center">
+									<p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Employee Share</p>
+									<p class="text-lg font-bold text-gray-800" id="epf-employee">₹ 0</p>
+								</div>
+								<div class="text-center">
+									<p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Employer Share</p>
+									<p class="text-lg font-bold text-gray-800" id="epf-employer">₹ 0</p>
+								</div>
+							</div>
+                            <div class="pt-6 border-t border-indigo-200">
+                                <canvas id="epfChart" height="150"></canvas>
+                            </div>
+						</div>
+					</div>
+				</div>
+
+				<article class="prose prose-indigo max-w-none">
+					<h2 class="text-3xl font-bold text-gray-900 mb-6 font-display">How EPF Contributions Work</h2>
+					<p class="text-gray-600 leading-relaxed mb-6">
+						The Employees' Provident Fund (EPF) is a mandatory savings scheme for salaried employees in India. Here is the breakdown of the 12% monthly contribution:
+					</p>
+                    <ul class="list-disc pl-6 text-gray-600 space-y-2 mb-6">
+                        <li><strong>Employee Contribution:</strong> Exactly 12% of your Basic + DA goes to your EPF account.</li>
+                        <li><strong>Employer Contribution:</strong> 12% is paid by the company, but it is split:
+                            <ul class="list-circle pl-6 mt-2">
+                                <li><strong>3.67%</strong> goes to your EPF account.</li>
+                                <li><strong>8.33%</strong> goes to the Employee Pension Scheme (EPS), capped at ₹1,250/month.</li>
+                            </ul>
+                        </li>
+                    </ul>
+					
+					<h2 class="text-3xl font-bold text-gray-900 mt-12 mb-6">EPF Interest Calculation</h2>
+					<p class="text-gray-600 leading-relaxed mb-6">
+						Interest is calculated monthly on the closing balance of the previous month. However, the total interest is credited to the account only at the end of the financial year (March 31st). Our calculator uses historical rates from our database to provide accurate growth projections.
+					</p>
+				</article>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script is:inline define:vars={{ rates }}>
+	const formatINR = (amount) => {
+		return '₹ ' + Math.round(amount).toLocaleString('en-IN');
+	};
+
+	const getRateForYear = (year) => {
+		const yearInt = parseInt(year);
+		const matches = rates.filter(r => parseInt(r.Year_Starting) <= yearInt);
+		if (matches.length === 0) return parseFloat(rates[0].Rate);
+		matches.sort((a, b) => parseInt(b.Year_Starting) - parseInt(a.Year_Starting));
+		return parseFloat(matches[0].Rate);
+	};
+
+    const calculateEPF = () => {
+        const startSalary = parseFloat(document.getElementById('epf-salary').value) || 0;
+        const years = parseInt(document.getElementById('epf-years').value) || 0;
+        const annualHike = parseFloat(document.getElementById('epf-hike').value) || 0;
+        const initialBalance = parseFloat(document.getElementById('epf-balance').value) || 0;
+
+        if (startSalary <= 0 || years <= 0) return;
+
+        let currentSalary = startSalary;
+        let employeeBalance = initialBalance / 2; // Approximate split for start
+        let employerBalance = initialBalance / 2;
+        let totalInterest = 0;
+        
+        const currentYear = new Date().getFullYear();
+        const labels = [];
+        const growthData = [];
+
+        for (let y = 0; y < years; y++) {
+            const fyRate = getRateForYear(currentYear + y) / 100;
+            const monthlyRate = fyRate / 12;
+
+            for (let m = 1; m <= 12; m++) {
+                // Employee 12%
+                const empContribution = currentSalary * 0.12;
+                
+                // Employer split: EPS is 8.33% of basic (capped at 15k)
+                const epsSalary = Math.min(currentSalary, 15000);
+                const epsContribution = epsSalary * 0.0833;
+                const employerEPFContribution = (currentSalary * 0.12) - epsContribution;
+
+                // Add to balances
+                employeeBalance += empContribution;
+                employerBalance += employerEPFContribution;
+
+                // Calculate interest on both (monthly)
+                totalInterest += (employeeBalance + employerBalance) * monthlyRate;
+            }
+
+            // Annual Hike
+            currentSalary *= (1 + annualHike / 100);
+            
+            labels.push('Yr ' + (y + 1));
+            growthData.push(employeeBalance + employerBalance + totalInterest);
+        }
+
+        const finalValue = employeeBalance + employerBalance + totalInterest;
+        document.getElementById('epf-total').innerText = formatINR(finalValue);
+        document.getElementById('epf-employee').innerText = formatINR(employeeBalance + (totalInterest/2)); // Split interest for display
+        document.getElementById('epf-employer').innerText = formatINR(employerBalance + (totalInterest/2));
+        
+        updateChart(labels, growthData);
+    };
+
+    let epfChart;
+    const updateChart = (labels, data) => {
+        const ctx = document.getElementById('epfChart').getContext('2d');
+        if (epfChart) epfChart.destroy();
+        epfChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'EPF Growth',
+                    data: data,
+                    borderColor: '#4f46e5',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    tension: 0.2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: { label: (ctx) => 'Wealth: ' + formatINR(ctx.raw) }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 10000000) return '₹' + (val/10000000).toFixed(1) + 'Cr';
+                                if (val >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
+                                return '₹' + val.toLocaleString('en-IN');
+                            },
+                            font: { size: 10 }
+                        }
+                    },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    };
+
+    document.getElementById('epf-salary-range').oninput = function() {
+        document.getElementById('epf-salary').value = this.value;
+        calculateEPF();
+    };
+    document.getElementById('epf-salary').oninput = function() {
+        document.getElementById('epf-salary-range').value = this.value;
+        calculateEPF();
+    };
+
+    ['epf-years', 'epf-hike', 'epf-balance'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateEPF);
+    });
+
+	calculateEPF();
+</script>
+
+<style>
+	input[type="range"] {
+		-webkit-appearance: none;
+		height: 6px;
+		background: #e2e8f0;
+		border-radius: 5px;
+		background-image: linear-gradient(#4f46e5, #4f46e5);
+		background-repeat: no-repeat;
+	}
+	
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+	}
+
+	input[type=number] {
+	-moz-appearance: textfield;
+	}
+</style>

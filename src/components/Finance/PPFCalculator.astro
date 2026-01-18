@@ -82,6 +82,9 @@ const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'PPF');
 									<p class="text-lg font-bold text-blue-600" id="ppf-earnings">₹ 0</p>
 								</div>
 							</div>
+                            <div class="pt-6 border-t border-blue-200">
+                                <canvas id="ppfChart" height="150"></canvas>
+                            </div>
 						</div>
 					</div>
 				</div>
@@ -158,20 +161,26 @@ const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'PPF');
         let balance = 0;
         let totalInvested = 0;
         let totalInterest = 0;
+        
+        const labels = [];
+        const investedData = [];
+        const totalData = [];
 
         for (let year = 0; year < tenure; year++) {
             const currentFY = startYear + year;
             const currentRate = getRateForYear(currentFY);
             const openingBalance = balance;
             
-            // Assume lumpsum deposit at start of year for simplicity in this Basic tool
-            // (Maxes out interest as per 5th of month rule)
             balance += yearlyInvest;
             totalInvested += yearlyInvest;
 
             const interest = Math.round(balance * (currentRate / 100));
             balance += interest;
             totalInterest += interest;
+
+            labels.push(currentFY);
+            investedData.push(totalInvested);
+            totalData.push(balance);
 
             // Update Table
             const row = `
@@ -188,6 +197,83 @@ const rates = parseCSV(csvData).filter((r: any) => r.Tool === 'PPF');
         document.getElementById('ppf-total').innerText = formatINR(balance);
         document.getElementById('ppf-invested').innerText = formatINR(totalInvested);
         document.getElementById('ppf-earnings').innerText = formatINR(totalInterest);
+
+        updateChart(labels, investedData, totalData);
+    };
+
+    let ppfChart;
+    const updateChart = (labels, invested, total) => {
+        const ctx = document.getElementById('ppfChart').getContext('2d');
+        
+        if (ppfChart) {
+            ppfChart.destroy();
+        }
+
+        ppfChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Invested Amount',
+                        data: invested,
+                        borderColor: '#94a3b8',
+                        backgroundColor: '#94a3b8',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        fill: false
+                    },
+                    {
+                        label: 'Total Value',
+                        data: total,
+                        borderColor: '#2563eb',
+                        backgroundColor: '#2563eb',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 10, weight: 'bold' }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + formatINR(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 10000000) return '₹' + (value/10000000).toFixed(1) + 'Cr';
+                                if (value >= 100000) return '₹' + (value/100000).toFixed(1) + 'L';
+                                return '₹' + value.toLocaleString('en-IN');
+                            },
+                            font: { size: 10 }
+                        }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
     };
 
     const syncPPF = (inputId, rangeId) => {

@@ -17,6 +17,7 @@ export function getStaticPaths() {
     { params: { tool: 'rd-calculator' } },
     { params: { tool: 'swp-calculator' } },
     { params: { tool: 'ppf-calculator' } },
+    { params: { tool: 'epf-calculator' } },
   ];
 }
 
@@ -57,6 +58,11 @@ const tools = {
     title: "PPF Calculator India - Public Provident Fund Returns",
     description: "Calculate PPF maturity value with historical interest rates. See a detailed year-by-year breakdown of your investment and tax-free interest.",
     Component: PPFCalculator
+  },
+  'epf-calculator': {
+    title: 'EPF Calculator - Employee Provident Fund Planning',
+    description: 'Estimate your EPF maturity value with contribution split (EPF/EPS) and salary growth.',
+    Component: EPFCalculator
   }
 };
 

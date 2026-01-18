@@ -59,6 +59,9 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 									<p class="text-lg font-bold text-green-600" id="sip-earnings">₹ 5,61,695</p>
 								</div>
 							</div>
+                            <div class="pt-6 border-t border-green-200">
+                                <canvas id="sipChart" height="150"></canvas>
+                            </div>
 						</div>
 					</div>
 				</div>
@@ -156,18 +159,36 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 		if (P <= 0 || annualRate <= 0 || years <= 0) return;
 
 		let FV, invested, earnings;
+        const labels = [];
+        const investedData = [];
+        const totalData = [];
 
 		if (currentMode === 'sip') {
 			const i = annualRate / 12 / 100;
 			const n = years * 12;
-			// Formula: FV = P × [{(1 + i)^n - 1} / i] × (1 + i)
+			// FV = P × [{(1 + i)^n - 1} / i] × (1 + i)
 			FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
 			invested = P * n;
+
+            // Generate chart data (Yearly steps for better visualization)
+            for (let y = 0; y <= years; y++) {
+                const months = y * 12;
+                const total = months === 0 ? 0 : P * ((Math.pow(1 + i, months) - 1) / i) * (1 + i);
+                labels.push('Yr ' + y);
+                investedData.push(P * months);
+                totalData.push(total);
+            }
 		} else {
 			// Lumpsum Formula: FV = P × (1 + r)^n
 			const r = annualRate / 100;
 			FV = P * Math.pow(1 + r, years);
 			invested = P;
+
+            for (let y = 0; y <= years; y++) {
+                labels.push('Yr ' + y);
+                investedData.push(P);
+                totalData.push(P * Math.pow(1 + r, y));
+            }
 		}
 
 		earnings = FV - invested;
@@ -175,7 +196,67 @@ import AdSidebar from '../Ads/AdSidebar.astro';
 		document.getElementById('sip-total').innerText = formatINR(FV);
 		document.getElementById('sip-invested').innerText = formatINR(invested);
 		document.getElementById('sip-earnings').innerText = formatINR(earnings);
+
+        updateChart(labels, investedData, totalData);
 	};
+
+    let sipChart;
+    const updateChart = (labels, invested, total) => {
+        const ctx = document.getElementById('sipChart').getContext('2d');
+        if (sipChart) sipChart.destroy();
+
+        sipChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Invested',
+                        data: invested,
+                        borderColor: '#94a3b8',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        fill: false
+                    },
+                    {
+                        label: 'Total Value',
+                        data: total,
+                        borderColor: '#10b981',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatINR(ctx.raw) }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 10000000) return '₹' + (val/10000000).toFixed(1) + 'Cr';
+                                if (val >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
+                                return '₹' + val.toLocaleString('en-IN');
+                            },
+                            font: { size: 10 }
+                        }
+                    },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    };
 
 	['sip-rate', 'sip-years'].forEach(id => {
 		const el = document.getElementById(id);
